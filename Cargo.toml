@@ -1,0 +1,10 @@
+[package]
+name = "hfqr_recv"
+version = "0.1.0"
+edition = "2021"
+authors = ["somewheve@gmail.com"]
+
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_repr = "*"
