@@ -3,6 +3,8 @@ name = "hfqr_recv"
 version = "0.1.0"
 edition = "2021"
 authors = ["somewheve@gmail.com"]
+description = "Trading order/market abstraction"
+license = "MIT"
 
 
 [dependencies]
