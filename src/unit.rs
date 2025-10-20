@@ -63,16 +63,18 @@ impl Display for Offset {
 #[repr(u8)]
 pub enum Status {
     ERROR = 0,
-    SUBMITTING = 1,
-    NOTTRADED = 2,
-    ALLTRADED = 3,
-    CANCELLED = 4,
-    CANCELFAILED = 5,
+    INITIAL = 1,
+    SUBMITTING = 2,
+    NOTTRADED = 3,
+    ALLTRADED = 4,
+    CANCELLED = 5,
+    CANCELFAILED = 6,
 }
 
 impl Debug for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
+            Self::INITIAL => write!(f, "INITIAL"),
             Self::ERROR => write!(f, "ERROR"),
             Self::SUBMITTING => write!(f, "SUBMITTING"),
             Self::NOTTRADED => write!(f, "NOTTRADED"),
@@ -86,6 +88,7 @@ impl Debug for Status {
 impl Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
+            Self::INITIAL => write!(f, "INITIAL"),
             Self::ERROR => write!(f, "ERROR"),
             Self::SUBMITTING => write!(f, "SUBMITTING"),
             Self::NOTTRADED => write!(f, "NOTTRADED"),
