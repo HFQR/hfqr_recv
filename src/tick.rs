@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-pub trait FutTickLevelStructure<F, T>
+pub trait TicLike<F, T>
 where
     T: Add + Mul + Div + Sub + PartialEq + PartialOrd + Into<f64>,
 {

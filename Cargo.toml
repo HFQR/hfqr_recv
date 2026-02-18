@@ -1,8 +1,8 @@
 [package]
 name = "hfqr_recv"
-version = "0.2.1"
-edition = "2021"
-authors = ["somewheve@gmail.com"]
+version = "0.3.0"
+edition = "2024"
+authors = ["somewheve@gmail.com", "fakeshadow"]
 description = "Trading order/market abstraction"
 license = "MIT"
 
