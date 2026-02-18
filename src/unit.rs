@@ -1,177 +1,340 @@
-use core::fmt;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use std::fmt::{Debug, Display};
+use core::{fmt, marker::PhantomData};
 
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
+use serde_core::{Deserialize, Deserializer, Serialize, Serializer, de};
+
+#[derive(Clone, Copy, Debug, PartialEq, serde::Deserialize)]
 #[repr(i8)]
 pub enum Direction {
     LONG = 1,
     SHORT = -1,
 }
 
-impl Debug for Direction {
+impl fmt::Display for Direction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::LONG => write!(f, "LONG"),
-            Self::SHORT => write!(f, "SHORT"),
+            Self::LONG => f.write_str("LONG"),
+            Self::SHORT => f.write_str("SHORT"),
         }
     }
 }
 
-impl Display for Direction {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Serialize for Direction {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        const NAME: &str = "Direction";
         match *self {
-            Self::LONG => write!(f, "LONG"),
-            Self::SHORT => write!(f, "SHORT"),
+            Direction::LONG => ser.serialize_unit_variant(NAME, 0, "LONG"),
+            Direction::SHORT => ser.serialize_unit_variant(NAME, 1, "SHORT"),
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Deserialize)]
 #[repr(u8)]
 pub enum Offset {
     OPEN = 1,
-    CLOSE = 2,
-    CLOSETODAY = 3,
-    CLOSEYESTERDAY = 4,
+    CLOSE,
+    CLOSETODAY,
+    CLOSEYESTERDAY,
 }
 
-impl Debug for Offset {
+impl fmt::Display for Offset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::OPEN => write!(f, "OPEN"),
-            Self::CLOSE => write!(f, "CLOSE"),
-            Self::CLOSETODAY => write!(f, "CLOSETODAY"),
-            Self::CLOSEYESTERDAY => write!(f, "CLOSEYESTERDAY"),
+            Self::OPEN => f.write_str("OPEN"),
+            Self::CLOSE => f.write_str("CLOSE"),
+            Self::CLOSETODAY => f.write_str("CLOSETODAY"),
+            Self::CLOSEYESTERDAY => f.write_str("CLOSEYESTERDAY"),
         }
     }
 }
 
-impl Display for Offset {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Serialize for Offset {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        const NAME: &str = "Offset";
         match *self {
-            Self::OPEN => write!(f, "OPEN"),
-            Self::CLOSE => write!(f, "CLOSE"),
-            Self::CLOSETODAY => write!(f, "CLOSETODAY"),
-            Self::CLOSEYESTERDAY => write!(f, "CLOSEYESTERDAY"),
+            Offset::OPEN => ser.serialize_unit_variant(NAME, 0, "OPEN"),
+            Offset::CLOSE => ser.serialize_unit_variant(NAME, 1, "CLOSE"),
+            Offset::CLOSETODAY => ser.serialize_unit_variant(NAME, 2, "CLOSETODAY"),
+            Offset::CLOSEYESTERDAY => ser.serialize_unit_variant(NAME, 3, "CLOSEYESTERDAY"),
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
 pub enum Status {
     ERROR = 0,
-    INITIAL = 1,
-    SUBMITTING = 2,
-    NOTTRADED = 3,
-    ALLTRADED = 4,
-    CANCELLED = 5,
-    CANCELFAILED = 6,
+    INITIAL,
+    SUBMITTING,
+    NOTTRADED,
+    ALLTRADED,
+    CANCELLED,
+    CANCELFAILED,
 }
 
-impl Debug for Status {
+impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::INITIAL => write!(f, "INITIAL"),
-            Self::ERROR => write!(f, "ERROR"),
-            Self::SUBMITTING => write!(f, "SUBMITTING"),
-            Self::NOTTRADED => write!(f, "NOTTRADED"),
-            Self::ALLTRADED => write!(f, "ALLTRADED"),
-            Self::CANCELLED => write!(f, "CANCELLED"),
-            Self::CANCELFAILED => write!(f, "CANCELFAILED"),
+            Self::ERROR => f.write_str("ERROR"),
+            Self::INITIAL => f.write_str("INITIAL"),
+            Self::SUBMITTING => f.write_str("SUBMITTING"),
+            Self::NOTTRADED => f.write_str("NOTTRADED"),
+            Self::ALLTRADED => f.write_str("ALLTRADED"),
+            Self::CANCELLED => f.write_str("CANCELLED"),
+            Self::CANCELFAILED => f.write_str("CANCELFAILED"),
         }
     }
 }
 
-impl Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Serialize for Status {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        const NAME: &str = "Status";
         match *self {
-            Self::INITIAL => write!(f, "INITIAL"),
-            Self::ERROR => write!(f, "ERROR"),
-            Self::SUBMITTING => write!(f, "SUBMITTING"),
-            Self::NOTTRADED => write!(f, "NOTTRADED"),
-            Self::ALLTRADED => write!(f, "ALLTRADED"),
-            Self::CANCELLED => write!(f, "CANCELLED"),
-            Self::CANCELFAILED => write!(f, "CANCELFAILED"),
+            Status::ERROR => ser.serialize_unit_variant(NAME, 0, "ERROR"),
+            Status::INITIAL => ser.serialize_unit_variant(NAME, 1, "INITIAL"),
+            Status::SUBMITTING => ser.serialize_unit_variant(NAME, 2, "SUBMITTING"),
+            Status::NOTTRADED => ser.serialize_unit_variant(NAME, 3, "NOTTRADED"),
+            Status::ALLTRADED => ser.serialize_unit_variant(NAME, 4, "ALLTRADED"),
+            Status::CANCELLED => ser.serialize_unit_variant(NAME, 5, "CANCELLED"),
+            Status::CANCELFAILED => ser.serialize_unit_variant(NAME, 6, "CANCELFAILED"),
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+impl<'de> Deserialize<'de> for Status {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        const VARIANTS: &[&str] = &[
+            "ERROR",
+            "INITIAL",
+            "SUBMITTING",
+            "NOTTRADED",
+            "ALLTRADED",
+            "CANCELLED",
+            "CANCELFAILED",
+        ];
+
+        enum Field {
+            F1,
+            F2,
+            F3,
+            F4,
+            F5,
+            F6,
+            F7,
+        }
+
+        struct FieldVisitor;
+
+        impl<'de> de::Visitor<'de> for FieldVisitor {
+            type Value = Field;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("variant identifier")
+            }
+
+            fn visit_u64<E>(self, val: u64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    0 => Ok(Field::F1),
+                    1 => Ok(Field::F2),
+                    2 => Ok(Field::F3),
+                    3 => Ok(Field::F4),
+                    4 => Ok(Field::F5),
+                    5 => Ok(Field::F6),
+                    6 => Ok(Field::F7),
+                    _ => Err(de::Error::invalid_value(
+                        de::Unexpected::Unsigned(val),
+                        &"variant index 0 <= i < 7",
+                    )),
+                }
+            }
+
+            #[inline]
+            fn visit_str<E>(self, val: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                self.visit_bytes(val.as_bytes())
+            }
+
+            fn visit_bytes<E>(self, val: &[u8]) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    b"ERROR" => Ok(Field::F1),
+                    b"INITIAL" => Ok(Field::F2),
+                    b"SUBMITTING" => Ok(Field::F3),
+                    b"NOTTRADED" => Ok(Field::F4),
+                    b"ALLTRADED" => Ok(Field::F5),
+                    b"CANCELLED" => Ok(Field::F6),
+                    b"CANCELFAILED" => Ok(Field::F7),
+                    _ => {
+                        let str = str::from_utf8(val).unwrap_or("\u{fffd}\u{fffd}\u{fffd}");
+                        Err(de::Error::unknown_variant(str, VARIANTS))
+                    }
+                }
+            }
+        }
+
+        impl<'de> Deserialize<'de> for Field {
+            #[inline]
+            fn deserialize<D>(de: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                de.deserialize_identifier(FieldVisitor)
+            }
+        }
+
+        struct Visitor<'de> {
+            marker: PhantomData<Status>,
+            lifetime: PhantomData<&'de ()>,
+        }
+
+        impl<'de> de::Visitor<'de> for Visitor<'de> {
+            type Value = Status;
+
+            fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+                fmt.write_str("enum Status")
+            }
+
+            fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+            where
+                A: de::EnumAccess<'de>,
+            {
+                match de::EnumAccess::variant(data)? {
+                    (Field::F1, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::ERROR)
+                    }
+                    (Field::F2, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::INITIAL)
+                    }
+                    (Field::F3, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::SUBMITTING)
+                    }
+                    (Field::F4, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::NOTTRADED)
+                    }
+                    (Field::F5, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::ALLTRADED)
+                    }
+                    (Field::F6, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::CANCELLED)
+                    }
+                    (Field::F7, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Status::CANCELFAILED)
+                    }
+                }
+            }
+        }
+
+        de.deserialize_enum(
+            "Status",
+            VARIANTS,
+            Visitor {
+                marker: PhantomData::<Status>,
+                lifetime: PhantomData,
+            },
+        )
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
 pub enum OrderType {
     LIMIT = 0,
-    MARKET = 1,
-    STOP = 2,
-    FAK = 3,
-    FOK = 4,
+    MARKET,
+    STOP,
+    FAK,
+    FOK,
 }
 
-impl Debug for OrderType {
+impl fmt::Display for OrderType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::LIMIT => write!(f, "LIMIT"),
-            Self::MARKET => write!(f, "MARKET"),
-            Self::STOP => write!(f, "STOP"),
-            Self::FAK => write!(f, "FAK"),
-            Self::FOK => write!(f, "FOK"),
+            Self::LIMIT => f.write_str("LIMIT"),
+            Self::MARKET => f.write_str("MARKET"),
+            Self::STOP => f.write_str("STOP"),
+            Self::FAK => f.write_str("FAK"),
+            Self::FOK => f.write_str("FOK"),
         }
     }
 }
 
-impl Display for OrderType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Self::LIMIT => write!(f, "LIMIT"),
-            Self::MARKET => write!(f, "MARKET"),
-            Self::STOP => write!(f, "STOP"),
-            Self::FAK => write!(f, "FAK"),
-            Self::FOK => write!(f, "FOK"),
-        }
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 #[repr(u8)]
 pub enum Exchange {
+    #[default]
     SHFE = 0,
-    CFFEX = 1,
-    CZCE = 2,
-    DCE = 3,
-    INE = 4,
-    COMEX = 5,
+    CFFEX,
+    CZCE,
+    DCE,
+    INE,
+    COMEX,
 }
 
-impl Default for Exchange {
-    fn default() -> Self {
-        Self::SHFE
-    }
-}
-
-impl Debug for Exchange {
+impl fmt::Display for Exchange {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::SHFE => write!(f, "SHFE"),
-            Self::CFFEX => write!(f, "CFFEX"),
-            Self::CZCE => write!(f, "CZCE"),
-            Self::DCE => write!(f, "DCE"),
-            Self::INE => write!(f, "INE"),
-            Self::COMEX => write!(f, "COMEX"),
+            Self::SHFE => f.write_str("SHFE"),
+            Self::CFFEX => f.write_str("CFFEX"),
+            Self::CZCE => f.write_str("CZCE"),
+            Self::DCE => f.write_str("DCE"),
+            Self::INE => f.write_str("INE"),
+            Self::COMEX => f.write_str("COMEX"),
         }
     }
 }
 
-impl Display for Exchange {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Self::SHFE => write!(f, "SHFE"),
-            Self::CFFEX => write!(f, "CFFEX"),
-            Self::CZCE => write!(f, "CZCE"),
-            Self::DCE => write!(f, "DCE"),
-            Self::INE => write!(f, "INE"),
-            Self::COMEX => write!(f, "COMEX"),
-        }
+impl Serialize for Exchange {
+    #[inline]
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        (*self as u8).serialize(ser)
+    }
+}
+
+impl<'de> Deserialize<'de> for Exchange {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let res = match Deserialize::deserialize(de)? {
+            0u8 => Exchange::SHFE,
+            1 => Exchange::CFFEX,
+            2 => Exchange::CZCE,
+            3 => Exchange::DCE,
+            4 => Exchange::INE,
+            5 => Exchange::COMEX,
+            other => {
+                return Err(de::Error::custom(format_args!("invalid value: {other}")));
+            }
+        };
+
+        Ok(res)
     }
 }

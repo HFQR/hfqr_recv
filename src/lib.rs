@@ -4,6 +4,6 @@ mod unit;
 
 pub mod parse;
 
-pub use crate::unit::*;
-pub use crate::order::FutOrder;
+pub use crate::order::OrderLike;
 pub use crate::tick::TicLike;
+pub use crate::unit::*;
