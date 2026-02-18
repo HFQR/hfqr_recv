@@ -1,7 +1,7 @@
 use core::ops::Add;
 
 /// generic abstraction for tick data
-pub trait TicLike {
+pub trait TickLike {
     type Int: Add<Output = Self::Int>;
     type Float;
 

@@ -1,8 +1,8 @@
-use core::{fmt, marker::PhantomData};
+use core::fmt;
 
 use serde_core::{Deserialize, Deserializer, Serialize, Serializer, de};
 
-#[derive(Clone, Copy, Debug, PartialEq, serde::Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(i8)]
 pub enum Direction {
     LONG = 1,
@@ -31,7 +31,105 @@ impl Serialize for Direction {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, serde::Deserialize)]
+impl<'de> Deserialize<'de> for Direction {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        const VARIANTS: &[&str] = &["LONG", "SHORT"];
+
+        enum Field {
+            F0,
+            F1,
+        }
+
+        struct FieldVisitor;
+
+        impl<'de> de::Visitor<'de> for FieldVisitor {
+            type Value = Field;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("variant identifier")
+            }
+
+            fn visit_u64<E>(self, val: u64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    0 => Ok(Field::F0),
+                    1 => Ok(Field::F1),
+                    _ => Err(de::Error::invalid_value(
+                        de::Unexpected::Unsigned(val),
+                        &"variant index 0 <= i < 2",
+                    )),
+                }
+            }
+
+            #[inline]
+            fn visit_str<E>(self, val: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                self.visit_bytes(val.as_bytes())
+            }
+
+            fn visit_bytes<E>(self, val: &[u8]) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    b"LONG" => Ok(Field::F0),
+                    b"SHORT" => Ok(Field::F1),
+                    _ => {
+                        let str = str::from_utf8(val).unwrap_or("\u{fffd}\u{fffd}\u{fffd}");
+                        Err(de::Error::unknown_variant(str, VARIANTS))
+                    }
+                }
+            }
+        }
+
+        impl<'de> Deserialize<'de> for Field {
+            #[inline]
+            fn deserialize<D>(de: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                de.deserialize_identifier(FieldVisitor)
+            }
+        }
+
+        struct Visitor;
+
+        impl<'de> de::Visitor<'de> for Visitor {
+            type Value = Direction;
+
+            fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+                fmt.write_str("enum Direction")
+            }
+
+            fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+            where
+                A: de::EnumAccess<'de>,
+            {
+                match de::EnumAccess::variant(data)? {
+                    (Field::F0, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Direction::LONG)
+                    }
+                    (Field::F1, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Direction::SHORT)
+                    }
+                }
+            }
+        }
+
+        de.deserialize_enum("Direction", VARIANTS, Visitor)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
 pub enum Offset {
     OPEN = 1,
@@ -63,6 +161,118 @@ impl Serialize for Offset {
             Offset::CLOSETODAY => ser.serialize_unit_variant(NAME, 2, "CLOSETODAY"),
             Offset::CLOSEYESTERDAY => ser.serialize_unit_variant(NAME, 3, "CLOSEYESTERDAY"),
         }
+    }
+}
+
+impl<'de> Deserialize<'de> for Offset {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        const VARIANTS: &[&str] = &["OPEN", "CLOSE", "CLOSETODAY", "CLOSEYESTERDAY"];
+
+        enum Field {
+            F0,
+            F1,
+            F2,
+            F3,
+        }
+
+        struct FieldVisitor;
+
+        impl<'de> de::Visitor<'de> for FieldVisitor {
+            type Value = Field;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("variant identifier")
+            }
+
+            fn visit_u64<E>(self, val: u64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    0 => Ok(Field::F0),
+                    1 => Ok(Field::F1),
+                    2 => Ok(Field::F2),
+                    3 => Ok(Field::F3),
+                    _ => Err(de::Error::invalid_value(
+                        de::Unexpected::Unsigned(val),
+                        &"variant index 0 <= i < 4",
+                    )),
+                }
+            }
+
+            #[inline]
+            fn visit_str<E>(self, val: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                self.visit_bytes(val.as_bytes())
+            }
+
+            fn visit_bytes<E>(self, val: &[u8]) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                match val {
+                    b"OPEN" => Ok(Field::F0),
+                    b"CLOSE" => Ok(Field::F1),
+                    b"CLOSETODAY" => Ok(Field::F2),
+                    b"CLOSEYESTERDAY" => Ok(Field::F3),
+                    _ => {
+                        let str = str::from_utf8(val).unwrap_or("\u{fffd}\u{fffd}\u{fffd}");
+                        Err(de::Error::unknown_variant(str, VARIANTS))
+                    }
+                }
+            }
+        }
+
+        impl<'de> Deserialize<'de> for Field {
+            #[inline]
+            fn deserialize<D>(de: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                de.deserialize_identifier(FieldVisitor)
+            }
+        }
+
+        struct Visitor;
+
+        impl<'de> de::Visitor<'de> for Visitor {
+            type Value = Offset;
+
+            fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+                fmt.write_str("enum Offset")
+            }
+
+            fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+            where
+                A: de::EnumAccess<'de>,
+            {
+                match de::EnumAccess::variant(data)? {
+                    (Field::F0, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Offset::OPEN)
+                    }
+                    (Field::F1, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Offset::CLOSE)
+                    }
+                    (Field::F2, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Offset::CLOSETODAY)
+                    }
+                    (Field::F3, v) => {
+                        de::VariantAccess::unit_variant(v)?;
+                        Ok(Offset::CLOSEYESTERDAY)
+                    }
+                }
+            }
+        }
+
+        de.deserialize_enum("Offset", VARIANTS, Visitor)
     }
 }
 
@@ -126,13 +336,13 @@ impl<'de> Deserialize<'de> for Status {
         ];
 
         enum Field {
+            F0,
             F1,
             F2,
             F3,
             F4,
             F5,
             F6,
-            F7,
         }
 
         struct FieldVisitor;
@@ -149,13 +359,13 @@ impl<'de> Deserialize<'de> for Status {
                 E: de::Error,
             {
                 match val {
-                    0 => Ok(Field::F1),
-                    1 => Ok(Field::F2),
-                    2 => Ok(Field::F3),
-                    3 => Ok(Field::F4),
-                    4 => Ok(Field::F5),
-                    5 => Ok(Field::F6),
-                    6 => Ok(Field::F7),
+                    0 => Ok(Field::F0),
+                    1 => Ok(Field::F1),
+                    2 => Ok(Field::F2),
+                    3 => Ok(Field::F3),
+                    4 => Ok(Field::F4),
+                    5 => Ok(Field::F5),
+                    6 => Ok(Field::F6),
                     _ => Err(de::Error::invalid_value(
                         de::Unexpected::Unsigned(val),
                         &"variant index 0 <= i < 7",
@@ -176,13 +386,13 @@ impl<'de> Deserialize<'de> for Status {
                 E: de::Error,
             {
                 match val {
-                    b"ERROR" => Ok(Field::F1),
-                    b"INITIAL" => Ok(Field::F2),
-                    b"SUBMITTING" => Ok(Field::F3),
-                    b"NOTTRADED" => Ok(Field::F4),
-                    b"ALLTRADED" => Ok(Field::F5),
-                    b"CANCELLED" => Ok(Field::F6),
-                    b"CANCELFAILED" => Ok(Field::F7),
+                    b"ERROR" => Ok(Field::F0),
+                    b"INITIAL" => Ok(Field::F1),
+                    b"SUBMITTING" => Ok(Field::F2),
+                    b"NOTTRADED" => Ok(Field::F3),
+                    b"ALLTRADED" => Ok(Field::F4),
+                    b"CANCELLED" => Ok(Field::F5),
+                    b"CANCELFAILED" => Ok(Field::F6),
                     _ => {
                         let str = str::from_utf8(val).unwrap_or("\u{fffd}\u{fffd}\u{fffd}");
                         Err(de::Error::unknown_variant(str, VARIANTS))
@@ -201,12 +411,9 @@ impl<'de> Deserialize<'de> for Status {
             }
         }
 
-        struct Visitor<'de> {
-            marker: PhantomData<Status>,
-            lifetime: PhantomData<&'de ()>,
-        }
+        struct Visitor;
 
-        impl<'de> de::Visitor<'de> for Visitor<'de> {
+        impl<'de> de::Visitor<'de> for Visitor {
             type Value = Status;
 
             fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -218,31 +425,31 @@ impl<'de> Deserialize<'de> for Status {
                 A: de::EnumAccess<'de>,
             {
                 match de::EnumAccess::variant(data)? {
-                    (Field::F1, v) => {
+                    (Field::F0, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::ERROR)
                     }
-                    (Field::F2, v) => {
+                    (Field::F1, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::INITIAL)
                     }
-                    (Field::F3, v) => {
+                    (Field::F2, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::SUBMITTING)
                     }
-                    (Field::F4, v) => {
+                    (Field::F3, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::NOTTRADED)
                     }
-                    (Field::F5, v) => {
+                    (Field::F4, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::ALLTRADED)
                     }
-                    (Field::F6, v) => {
+                    (Field::F5, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::CANCELLED)
                     }
-                    (Field::F7, v) => {
+                    (Field::F6, v) => {
                         de::VariantAccess::unit_variant(v)?;
                         Ok(Status::CANCELFAILED)
                     }
@@ -250,14 +457,7 @@ impl<'de> Deserialize<'de> for Status {
             }
         }
 
-        de.deserialize_enum(
-            "Status",
-            VARIANTS,
-            Visitor {
-                marker: PhantomData::<Status>,
-                lifetime: PhantomData,
-            },
-        )
+        de.deserialize_enum("Status", VARIANTS, Visitor)
     }
 }
 
