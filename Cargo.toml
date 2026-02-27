@@ -1,11 +1,10 @@
 [package]
 name = "hfqr_recv"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2024"
 authors = ["somewheve@gmail.com", "fakeshadow"]
 description = "Trading order/market abstraction"
 license = "MIT"
-
 
 [dependencies]
 serde_core = "1"
