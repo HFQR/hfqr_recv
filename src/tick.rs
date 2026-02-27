@@ -1,5 +1,7 @@
 use core::ops::Add;
 
+use crate::Depth;
+
 /// generic abstraction for tick data
 pub trait TickLike {
     type Int: Add<Output = Self::Int>;
@@ -13,13 +15,13 @@ pub trait TickLike {
 
     fn open_interest(&self) -> Self::Int;
 
-    fn bid_price(&self, idx: usize) -> Self::Float;
+    fn bid_price(&self, dep: Depth) -> Self::Float;
 
-    fn ask_price(&self, idx: usize) -> Self::Float;
+    fn ask_price(&self, dep: Depth) -> Self::Float;
 
-    fn bid_volume(&self, idx: usize) -> Self::Int;
+    fn bid_volume(&self, dep: Depth) -> Self::Int;
 
-    fn ask_volume(&self, idx: usize) -> Self::Int;
+    fn ask_volume(&self, dep: Depth) -> Self::Int;
 
     fn snap_time(&self) -> u32;
 
@@ -47,19 +49,19 @@ pub trait TickLike {
 
     #[inline]
     fn ask_volume_all(&self) -> Self::Int {
-        self.ask_volume(0)
-            + self.ask_volume(1)
-            + self.ask_volume(2)
-            + self.ask_volume(3)
-            + self.ask_volume(4)
+        self.ask_volume(Depth::_1)
+            + self.ask_volume(Depth::_2)
+            + self.ask_volume(Depth::_3)
+            + self.ask_volume(Depth::_4)
+            + self.ask_volume(Depth::_5)
     }
 
     #[inline]
     fn bid_volume_all(&self) -> Self::Int {
-        self.bid_volume(0)
-            + self.bid_volume(1)
-            + self.bid_volume(2)
-            + self.bid_volume(3)
-            + self.bid_volume(4)
+        self.bid_volume(Depth::_1)
+            + self.bid_volume(Depth::_2)
+            + self.bid_volume(Depth::_3)
+            + self.bid_volume(Depth::_4)
+            + self.bid_volume(Depth::_5)
     }
 }
