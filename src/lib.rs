@@ -10,7 +10,7 @@ pub use crate::unit::*;
 
 /// identifier for market depth of ask/bid
 #[repr(u8)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Depth {
     /// ask/bid 1
     _1 = 0,
