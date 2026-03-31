@@ -46,6 +46,14 @@ impl Add for Depth {
     }
 }
 
+impl Depth {
+    /// An iterator of all Depth from _1 to _5 in order
+    #[inline]
+    pub fn all() -> core::array::IntoIter<Depth, 5> {
+        [Depth::_1, Depth::_2, Depth::_3, Depth::_4, Depth::_5].into_iter()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::panic::catch_unwind;
@@ -59,6 +67,9 @@ mod test {
         assert_eq!(2, Depth::_3 as u8);
         assert_eq!(3, Depth::_4 as u8);
         assert_eq!(4, Depth::_5 as u8);
+
+        let total = Depth::all().map(|dep| dep as u8).sum::<u8>();
+        assert_eq!(total, 10);
 
         let dep = Depth::_1;
 
